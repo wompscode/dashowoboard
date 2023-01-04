@@ -39,7 +39,7 @@ function getData(rt = false) {
 		resolve({
 			ptmp: cpuTemp.main,
 			pmem: formatBytes(siMem.active) + " / " + formatBytes(siMem.total) + " (" + formatBytes(siMem.available) + " available)",
-			umem: siMem.used * 0.000001,
+			umem: siMem.active * 0.000001,
 			uptime: prettyms(si.time().uptime * 1000),
 			filesystems: rt ? [] : filesys,
 			sys: {
