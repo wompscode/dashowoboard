@@ -120,9 +120,9 @@
 		piMemChart.paused = !piMemChart.paused;
 		document.querySelector("#dataPausePiMemT").innerText = piMemChart.paused ? "Resume graphing" : "Pause graphing";
 	});
-	document.querySelector("#dataPausePiMem").addEventListener("click", () => {
+	document.querySelector("#dataPausePiCPU").addEventListener("click", () => {
 		piCPUChart.paused = !piCPUChart.paused;
-		document.querySelector("#dataPausePiMemT").innerText = piCPUChart.paused ? "Resume graphing" : "Pause graphing";
+		document.querySelector("#dataPausePiCPUT").innerText = piCPUChart.paused ? "Resume graphing" : "Pause graphing";
 	});
 	function updChart(_, arr, data, slice) {
 		arr.push(data);
