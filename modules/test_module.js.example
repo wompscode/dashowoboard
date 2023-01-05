@@ -8,6 +8,9 @@ function getRandomInt(min, max) {
 	max = Math.floor(max);
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+exports.onLoad = function(args) {
+
+}
 exports.main = function(args) {
 	return new Promise(async (resolve, reject) => {
 		setTimeout(() => {

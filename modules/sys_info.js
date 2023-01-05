@@ -9,23 +9,32 @@ function formatBytes(bytes, decimals = 2) {
 	const i = Math.floor(Math.log(bytes) / Math.log(k));
 	return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 };
+
+let cached_data = {};
+let filesys_interval;
+
 exports.name = "sys_info";
 exports.pollingArgs = {
-	rt: true
+	init: true
 };
 exports.initArgs = {
-	rt: false
+	init: false
 };
 exports.pollingRate = 500;
-exports.main = function(args) {
+
+exports.onLoad = function(args) {
 	return new Promise(async (resolve, reject) => {
-		cpuTemp = await si.cpuTemperature();
+
 		osI = await si.osInfo();
 		sy = await si.system();
-		siMem = await si.mem();
-		if (args.rt == false) {
+
+		cached_data = {
+			osI,
+			sy
+		};
+		filesys_interval = setInterval(()=>{
 			filesys = [];
-			await si.fsSize((fsSize) => {
+			si.fsSize().then((fsSize) => {
 				fsSize.forEach((cv) => {
 					filesys.push({
 						name: `${cv.fs} (${cv.mount})`,
@@ -33,17 +42,29 @@ exports.main = function(args) {
 					});
 				});
 			});
-		}
+			cached_data["filesys"] = filesys;
+		},15000);
+		resolve(true);
+	});
+}
+
+exports.main = function(args) {
+	return new Promise(async (resolve, reject) => {
+		
+		cpuTemp = await si.cpuTemperature();
+		siMem = await si.mem();
+
+
 		resolve({
 			ptmp: cpuTemp.main,
 			pmem: formatBytes(siMem.active) + " / " + formatBytes(siMem.total) + " (" + formatBytes(siMem.available) + " available)",
 			umem: siMem.active * 0.000001,
 			uptime: prettyms(si.time().uptime * 1000),
-			filesystems: args.rt ? [] : filesys,
+			filesystems: cached_data.filesys,
 			sys: {
-				model: sy.model,
-				hostname: osI.hostname,
-				kernel: osI.kernel
+				model: cached_data.sy.model,
+				hostname: cached_data.osI.hostname,
+				kernel: cached_data.osI.kernel
 			}
 		});
 	});

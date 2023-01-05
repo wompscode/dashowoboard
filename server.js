@@ -14,12 +14,14 @@ for (const file of fs.readdirSync("./modules").filter(file => file.endsWith(".js
 	console.log(`Loading module ${file.split(".")[0]}..`);
 	try {
 		const module = require(`./modules/${file}`);
-		modules[module.name] = module;
-		emitters[module.name] = setInterval(() => {
-			module.main(module.pollingArgs).then((c) => {
-				io.emit(`${module.name}_data`, c);
-			}).catch((ex) => console.log(`There was an exception in module ${module.name}: ${ex}`));
-		}, module.pollingRate)
+        module.onLoad().then(()=>{
+            modules[module.name] = module;
+            emitters[module.name] = setInterval(() => {
+                module.main(module.pollingArgs).then((c) => {
+                    io.emit(`${module.name}_data`, c);
+                }).catch((ex) => console.log(`There was an exception in module ${module.name}: ${ex}`));
+            }, module.pollingRate)
+        });
 	}
 	catch (ex) {
 		console.log(`Could not load module ${file.split(".")[0]}: ${ex}`)
