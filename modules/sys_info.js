@@ -27,12 +27,22 @@ exports.onLoad = function(args) {
 
 		osI = await si.osInfo();
 		sy = await si.system();
-
+		filesys = [];
+		si.fsSize().then((fsSize) => {
+			fsSize.forEach((cv) => {
+				filesys.push({
+					name: `${cv.fs} (${cv.mount})`,
+					used: `${formatBytes(cv.used)} / ${formatBytes(cv.size)} (${cv.use}%)`
+				});
+			});
+		});
 		cached_data = {
 			osI,
-			sy
+			sy,
+			filesys
 		};
 		filesys_interval = setInterval(()=>{
+			console.log(`[sys_info] filesys_interval ran.`)
 			filesys = [];
 			si.fsSize().then((fsSize) => {
 				fsSize.forEach((cv) => {
@@ -43,7 +53,7 @@ exports.onLoad = function(args) {
 				});
 			});
 			cached_data["filesys"] = filesys;
-		},15000);
+		},900000);
 		resolve(true);
 	});
 }
