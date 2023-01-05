@@ -9,12 +9,16 @@
 					<table>
 						<tr>
 							<th>CPU Temperature <button id="dataPausePiTemp"><span id="dataPausePiTempT">Pause graphing</span></button></th>
+							<th>CPU Usage <button id="dataPausePiCPU"><span id="dataPausePiCPUT">Pause graphing</span></button></th>
 							<th>Memory <button id="dataPausePiMem"><span id="dataPausePiMemT">Pause graphing</span></button></th>
 							<th>System</th>
 						</tr>
 						<tr>
 							<td><span id="piTemp"></span>
 								<div style="width: 256px; height:auto;"><canvas id="piTempC"></canvas></div>
+							</td>
+							<td id="piCPU-td"><span id="piCPU"></span>
+								<div style="width: 256px; height:auto;"><canvas id="piCPUC"></canvas></div>
 							</td>
 							<td id="piMem-td"><span id="piMem"></span>
 								<div style="width: 256px; height:auto;"><canvas id="piMemC"></canvas></div>
@@ -88,6 +92,26 @@
 		options
 	});
 	piMemChart.paused = false;
+	// cpu chart
+	var piCPUArray = [];
+	var piCPUChart = new Chart(document.getElementById('piCPUC'), {
+		type: 'line',
+		data: {
+			labels: piTempArray,
+			datasets: [{
+				label: 'cpu usage (%)',
+				data: piTempArray,
+				fill: true,
+				backgroundColor: "rgba(0,0,0,1.0)",
+				borderColor: 'rgb(131, 87, 179)',
+				pointRadius: 2.5,
+				pointHoverRadius: 2.8,
+				tension: 0.05
+			}]
+		},
+		options
+	});
+	piCPUChart.paused = false;
 	document.querySelector("#dataPausePiTemp").addEventListener("click", () => {
 		piTempChart.paused = !piTempChart.paused;
 		document.querySelector("#dataPausePiTempT").innerText = piTempChart.paused ? "Resume graphing" : "Pause graphing";
@@ -96,7 +120,10 @@
 		piMemChart.paused = !piMemChart.paused;
 		document.querySelector("#dataPausePiMemT").innerText = piMemChart.paused ? "Resume graphing" : "Pause graphing";
 	});
-
+	document.querySelector("#dataPausePiMem").addEventListener("click", () => {
+		piCPUChart.paused = !piCPUChart.paused;
+		document.querySelector("#dataPausePiMemT").innerText = piCPUChart.paused ? "Resume graphing" : "Pause graphing";
+	});
 	function updChart(_, arr, data, slice) {
 		arr.push(data);
 		arr = arr.slice(slice);
@@ -115,13 +142,9 @@
 				const tr1 = document.createElement("tr");
 				const th1 = document.createElement("th");
 				tr1.appendChild(th1);
-				th1.innerText = `${data.filesystems[i].name}`;
-				const tr2 = document.createElement("tr");
-				const th2 = document.createElement("th");
-				tr2.appendChild(th2);
-				th2.innerText = `${data.filesystems[i].used}`;
+				th1.innerText = `${data.filesystems[i].name} - ${data.filesystems[i].used}`;
+				tr1.classList.add("fs_value")
 				_tempfs.appendChild(tr1);
-				_tempfs.appendChild(tr2);
 			}
 		}
 		sys_info_init = true;
@@ -132,8 +155,11 @@
 		piTempArray = piTempArray.slice(-38);
 		updChart(piMemChart, piMemArray, data.umem, -45);
 		piMemArray = piMemArray.slice(-45);
+		updChart(piCPUChart, piCPUArray, data.clrd, -45);
+		piCPUArray = piCPUArray.slice(-45);
 		document.querySelector("#piTemp").innerText = data.ptmp + "c";
 		document.querySelector("#piMem").innerText = data.pmem;
+		document.querySelector("#piCPU").innerText = Math.round(data.clrd) + "%";
 		document.querySelector("#piUptime").innerText = data.uptime;
 	});
 </script>

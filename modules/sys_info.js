@@ -63,12 +63,13 @@ exports.main = function(args) {
 		
 		cpuTemp = await si.cpuTemperature();
 		siMem = await si.mem();
-
+		siCurLoad = await si.currentLoad();
 
 		resolve({
 			ptmp: cpuTemp.main,
 			pmem: formatBytes(siMem.active) + " / " + formatBytes(siMem.total) + " (" + formatBytes(siMem.available) + " available)",
 			umem: siMem.active * 0.000001,
+			clrd: siCurLoad.currentLoad,
 			uptime: prettyms(si.time().uptime * 1000),
 			filesystems: cached_data.filesys,
 			sys: {
