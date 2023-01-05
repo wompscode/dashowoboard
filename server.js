@@ -1,72 +1,51 @@
 const express = require("express"),
-	http = require("http"),
+	http = require('http'),
 	app = express(),
 	server = http.createServer(app),
 	socketio = require("socket.io"),
 	io = new socketio.Server(server),
-	prettyms = require("pretty-ms"),
+	fs = require('fs'),
 	config = require("./config.json"),
-	si = require("systeminformation");
-taglines = config.taglines;
+	taglines = config.taglines;
 app.set('view engine', 'ejs');
-
-function formatBytes(bytes, decimals = 2) {
-	if (!+bytes) return '0 Bytes';
-	const k = 1024;
-	const dm = decimals < 0 ? 0 : decimals;
-	const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-	const i = Math.floor(Math.log(bytes) / Math.log(k));
-	return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
-};
-
-function getData(rt = false) {
-	return new Promise(async (resolve, reject) => {
-		cpuTemp = await si.cpuTemperature();
-		osI = await si.osInfo();
-		sy = await si.system();
-		siMem = await si.mem();
-		if (rt == false) {
-			filesys = [];
-			await si.fsSize((fsSize) => {
-				fsSize.forEach((cv) => {
-					filesys.push({
-						name: `${cv.fs} (${cv.mount})`,
-						used: `${formatBytes(cv.used)} / ${formatBytes(cv.size)} (${cv.use}%)`
-					});
-				});
-			});
-		}
-		resolve({
-			ptmp: cpuTemp.main,
-			pmem: formatBytes(siMem.active) + " / " + formatBytes(siMem.total) + " (" + formatBytes(siMem.available) + " available)",
-			umem: siMem.active * 0.000001,
-			uptime: prettyms(si.time().uptime * 1000),
-			filesystems: rt ? [] : filesys,
-			sys: {
-				model: sy.model,
-				hostname: osI.hostname,
-				kernel: osI.kernel
-			}
-		});
-	});
+const emitters = {};
+const modules = {};
+for (const file of fs.readdirSync("./modules").filter(file => file.endsWith(".js"))) {
+	console.log(`Loading module ${file.split(".")[0]}..`);
+	try {
+		const module = require(`./modules/${file}`);
+		modules[module.name] = module;
+		emitters[module.name] = setInterval(() => {
+			module.main(module.pollingArgs).then((c) => {
+				io.emit(`${module.name}_data`, c);
+			}).catch((ex) => console.log(`There was an exception in module ${module.name}: ${ex}`));
+		}, module.pollingRate)
+	}
+	catch (ex) {
+		console.log(`Could not load module ${file.split(".")[0]}: ${ex}`)
+	}
 }
-socketEmitter = setInterval(() => {
-	getData(true).then((data) => {
-		io.emit('pi_data', data);
-	})
-}, 500);
 io.on('connection', (socket) => {
-	console.log('connected.');
+	socket.on("request_init", () => {
+		console.log('connected.');
+		for (let value of Object.keys(modules)) {
+			new Promise((reso, reje) => {
+				var module = modules[value];
+				module.main(module.initArgs).then((c) => {
+					socket.emit(`${value}_init`, c);
+				}).catch((ex) => console.log(`There was an exception in module ${value}: ${ex}.`));
+			})
+		}
+	});
 	socket.on('disconnect', () => {
 		console.log('disconnected.');
 	});
 });
 app.use(express.static('public'))
-app.get("/", (req, res) => {
-	getData().then((data) => {
-		res.render('pages/index', Object.assign({
-			tagl: taglines[Math.floor(Math.random() * taglines.length)]
-		}, data));
+app.get("/", async (req, res) => {
+	res.render('pages/index', {
+		title: config.dash_name,
+		tagl: taglines[Math.floor(Math.random() * taglines.length)]
 	});
 });
 app.get('*', function(req, res) {

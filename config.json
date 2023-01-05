@@ -1,4 +1,5 @@
 {
+    "dash_name": "dashowoboard",
     "taglines": ["what's this?", "hey, what's this button do?", "todo: take out the trash.", "when nothing's going right, go left.", "[INSERT QUARTER TO CONTINUE PLAYING]", "spinning extremely violently.. please wait..", "running in a completely random direction..", "balancing multiple books on top of eachother..", "thinking of something funny to put here..", "don't worry about the person standing behind you!"],
     "port": 3000
 }

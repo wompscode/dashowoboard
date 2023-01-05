@@ -1,17 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> <%- include("../partials/head"); %> </head>
+
+<head>
+    <%- include("../partials/head"); %>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/main.js"></script>
+</head>
+
 <body>
-	<div id="header"> <%- include("../partials/header"); %> <p id="infotable">
-			<span id="warning"></span>
-			<span id="success"></span>
-		</p>
-	</div>
-	<div id="content">
-		<div id="container"> <%- include("../partials/sys_stats"); %> </div>
-	</div>
-	<script src="/chart.js"></script>
-	<script src="/socket.io/socket.io.js"></script>
-	<script src="/main.js"></script>
+    <div id="header">
+        <%- include("../partials/header"); %>
+        <p id="infotable">
+            <span id="info"></span>
+        </p>
+    </div>
+    <div id="content">
+        <div id="container">
+            <%- include("../partials/sys_info_partial"); %>
+        </div>
+
 </body>
+
 </html>

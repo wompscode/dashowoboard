@@ -1,0 +1,139 @@
+<div id="piStats">
+	<ul>
+		<li>
+			<h2 id="title"></h2>
+		</li>
+		<li>
+			<ul>
+				<li id="values">
+					<table>
+						<tr>
+							<th>CPU Temperature <button id="dataPausePiTemp"><span id="dataPausePiTempT">Pause graphing</span></button></th>
+							<th>Memory <button id="dataPausePiMem"><span id="dataPausePiMemT">Pause graphing</span></button></th>
+							<th>System</th>
+						</tr>
+						<tr>
+							<td><span id="piTemp"></span>
+								<div style="width: 256px; height:auto;"><canvas id="piTempC"></canvas></div>
+							</td>
+							<td id="piMem-td"><span id="piMem"></span>
+								<div style="width: 256px; height:auto;"><canvas id="piMemC"></canvas></div>
+							</td>
+							<td><span style="font-weight:bold;">Uptime: </span><span id="piUptime"></span><br><span style="font-weight:bold;">Kernel: </span><span id="kernel"></span></td>
+						</tr>
+					</table>
+					<table id="filesystems">
+					</table>
+				</li>
+			</ul>
+		</li>
+	</ul>
+</div>
+<script src="/chart.js"></script>
+<script>
+	let sys_info_init = false;
+	// common chart options
+	const options = {
+		plugins: {
+			legend: {
+				display: true,
+			}
+		},
+		scales: {
+			x: {
+				ticks: {
+					display: false
+				}
+			}
+		}
+	}
+	Chart.defaults.font.family = "monospace";
+	// temp chart
+	var piTempArray = [];
+	var piTempChart = new Chart(document.getElementById('piTempC'), {
+		type: 'line',
+		data: {
+			labels: piTempArray,
+			datasets: [{
+				label: 'temperature (in c)',
+				data: piTempArray,
+				fill: true,
+				backgroundColor: "rgba(0,0,0,1.0)",
+				borderColor: 'rgb(131, 87, 179)',
+				pointRadius: 2.5,
+				pointHoverRadius: 2.8,
+				tension: 0.05
+			}]
+		},
+		options
+	});
+	piTempChart.paused = false;
+	// memory chart
+	var piMemArray = [];
+	var piMemChart = new Chart(document.getElementById('piMemC'), {
+		type: 'line',
+		data: {
+			labels: piTempArray,
+			datasets: [{
+				label: 'memory (in mb)',
+				data: piTempArray,
+				fill: true,
+				backgroundColor: "rgba(0,0,0,1.0)",
+				borderColor: 'rgb(131, 87, 179)',
+				pointRadius: 2.5,
+				pointHoverRadius: 2.8,
+				tension: 0.05
+			}]
+		},
+		options
+	});
+	piMemChart.paused = false;
+	document.querySelector("#dataPausePiTemp").addEventListener("click", () => {
+		piTempChart.paused = !piTempChart.paused;
+		document.querySelector("#dataPausePiTempT").innerText = piTempChart.paused ? "Resume graphing" : "Pause graphing";
+	});
+	document.querySelector("#dataPausePiMem").addEventListener("click", () => {
+		piMemChart.paused = !piMemChart.paused;
+		document.querySelector("#dataPausePiMemT").innerText = piMemChart.paused ? "Resume graphing" : "Pause graphing";
+	});
+
+	function updChart(_, arr, data, slice) {
+		arr.push(data);
+		arr = arr.slice(slice);
+		if (_.paused == true) return;
+		_.data.datasets[0].data = arr;
+		_.data.labels = arr;
+		_.update('none');
+	}
+	this.socket.on("sys_info_init", (data) => {
+		if (sys_info_init == true) return;
+		document.querySelector("#title").innerText = `${data.sys.model} (${data.sys.hostname}) Statistics`;
+		document.querySelector("#kernel").innerText = `${data.sys.kernel}`;
+		if (data.filesystems) {
+			var _tempfs = document.querySelector("#filesystems");
+			for (i = 0; i < data.filesystems.length; i++) {
+				const tr1 = document.createElement("tr");
+				const th1 = document.createElement("th");
+				tr1.appendChild(th1);
+				th1.innerText = `${data.filesystems[i].name}`;
+				const tr2 = document.createElement("tr");
+				const th2 = document.createElement("th");
+				tr2.appendChild(th2);
+				th2.innerText = `${data.filesystems[i].used}`;
+				_tempfs.appendChild(tr1);
+				_tempfs.appendChild(tr2);
+			}
+		}
+		sys_info_init = true;
+	});
+	this.socket.on('sys_info_data', (data) => {
+		if (sys_info_init == false) return;
+		updChart(piTempChart, piTempArray, data.ptmp, -38);
+		piTempArray = piTempArray.slice(-38);
+		updChart(piMemChart, piMemArray, data.umem, -45);
+		piMemArray = piMemArray.slice(-45);
+		document.querySelector("#piTemp").innerText = data.ptmp + "c";
+		document.querySelector("#piMem").innerText = data.pmem;
+		document.querySelector("#piUptime").innerText = data.uptime;
+	});
+</script>

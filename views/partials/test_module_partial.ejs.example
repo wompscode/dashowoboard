@@ -1,0 +1,30 @@
+<!-- Refer to this for module partial creation. -->
+<div id="test_module">
+	<ul>
+		<li>
+			<h2>This is a part of a test module.</h2>
+		</li>
+		<li>
+			<table>
+				<tr>
+					<th>Number</th>
+				</tr>
+				<tr>
+					<td id="number"></td>
+				</tr>
+			</table>
+		</li>
+	</ul>
+</div>
+<script>
+	let tm_init = false;
+	this.socket.on("test_module_init", (data) => {
+		if (tm_init == true) return;
+		document.querySelector("#number").innerText = data.number;
+		tm_init = true;
+	});
+	this.socket.on('test_module_data', (data) => {
+		if (tm_init == false) return;
+		document.querySelector("#number").innerText = data.number;
+	});
+</script>

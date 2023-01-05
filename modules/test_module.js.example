@@ -1,0 +1,20 @@
+/* You can refer to this module when creating one of your own. */
+exports.name = "test_module";
+exports.pollingArgs = {}; // Arguments when polled constantly.
+exports.initArgs = {}; // Arguments on init only.
+exports.pollingRate = 500; // THIS IS IN MILLISECONDS! EXERCISE CARE, TOO FAST POLLING RATE CAN USE TOO MUCH CPU!
+function getRandomInt(min, max) {
+	min = Math.ceil(min);
+	max = Math.floor(max);
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+exports.main = function(args) {
+	return new Promise(async (resolve, reject) => {
+		setTimeout(() => {
+			if (getRandomInt(0, 4) == 1) reject("Test rejection"); // 1/4 chance of creating exception to test handling.
+			resolve({
+				number: getRandomInt(0, 50)
+			});
+		}, getRandomInt(50, 3000)); // 50ms to 3s delay at random to test holding up other modules.
+	});
+}
