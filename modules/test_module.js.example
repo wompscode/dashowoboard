@@ -11,7 +11,8 @@ function getRandomInt(min, max) {
 exports.onLoad = function(args) {
 
 }
-exports.main = function(args) {
+// Socket is only passed on init.
+exports.main = function(args, socket) {
 	return new Promise(async (resolve, reject) => {
 		setTimeout(() => {
 			if (getRandomInt(0, 4) == 1) reject("Test rejection"); // 1/4 chance of creating exception to test handling.

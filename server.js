@@ -33,7 +33,7 @@ io.on('connection', (socket) => {
 		for (let value of Object.keys(modules)) {
 			new Promise((reso, reje) => {
 				var module = modules[value];
-				module.main(module.initArgs).then((c) => {
+				module.main(module.initArgs, socket).then((c) => {
 					socket.emit(`${value}_init`, c);
 				}).catch((ex) => console.log(`There was an exception in module ${value}: ${ex}.`));
 			})
