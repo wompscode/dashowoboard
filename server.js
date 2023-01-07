@@ -23,6 +23,7 @@ for (const file of fs.readdirSync("./modules").filter(file => file.endsWith(".js
             modules[module.name] = module;
             emitters[module.name] = setInterval(() => {
                 module.main(module.pollingArgs, null, helpers).then((c) => {
+					if(c == null) return;
                     io.emit(`${module.name}_data`, c);
                 }).catch((ex) => console.log(`There was an exception in module ${module.name}: ${ex}`));
             }, module.pollingRate)
