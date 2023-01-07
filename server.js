@@ -19,7 +19,7 @@ for (const file of fs.readdirSync("./modules").filter(file => file.endsWith(".js
 	console.log(`Loading module ${file.split(".")[0]}..`);
 	try {
 		const module = require(`./modules/${file}`);
-        module.onLoad().then(()=>{
+        module.onLoad(helpers).then(()=>{
             modules[module.name] = module;
             emitters[module.name] = setInterval(() => {
                 module.main(module.pollingArgs, null, helpers).then((c) => {

@@ -22,7 +22,7 @@ exports.initArgs = {
 };
 exports.pollingRate = 500;
 
-exports.onLoad = function(args, socket) {
+exports.onLoad = function(helpers) {
 	return new Promise(async (resolve, reject) => {
 
 		osI = await si.osInfo();

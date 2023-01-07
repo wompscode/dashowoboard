@@ -8,7 +8,7 @@ function getRandomInt(min, max) {
 	max = Math.floor(max);
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-exports.onLoad = function(args) {
+exports.onLoad = function(helpers) {
 
 }
 // Socket is only passed on init. Helpers will contain helper functions, no documentation yet. Read server.js.
