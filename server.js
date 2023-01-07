@@ -39,6 +39,7 @@ io.on('connection', (socket) => {
 			new Promise((reso, reje) => {
 				var module = modules[value];
 				module.main(module.initArgs, socket, helpers).then((c) => {
+					if(c == null) return;
 					socket.emit(`${value}_init`, c);
 				}).catch((ex) => console.log(`There was an exception in module ${value}: ${ex}.`));
 			})
