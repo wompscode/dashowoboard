@@ -10,6 +10,11 @@ const express = require("express"),
 app.set('view engine', 'ejs');
 const emitters = {};
 const modules = {};
+const helpers = {
+	io_emit: function(key, value) {
+		return io.emit(key, value);
+	}
+}
 for (const file of fs.readdirSync("./modules").filter(file => file.endsWith(".js"))) {
 	console.log(`Loading module ${file.split(".")[0]}..`);
 	try {
@@ -17,7 +22,7 @@ for (const file of fs.readdirSync("./modules").filter(file => file.endsWith(".js
         module.onLoad().then(()=>{
             modules[module.name] = module;
             emitters[module.name] = setInterval(() => {
-                module.main(module.pollingArgs).then((c) => {
+                module.main(module.pollingArgs, null, helpers).then((c) => {
                     io.emit(`${module.name}_data`, c);
                 }).catch((ex) => console.log(`There was an exception in module ${module.name}: ${ex}`));
             }, module.pollingRate)
@@ -33,7 +38,7 @@ io.on('connection', (socket) => {
 		for (let value of Object.keys(modules)) {
 			new Promise((reso, reje) => {
 				var module = modules[value];
-				module.main(module.initArgs, socket).then((c) => {
+				module.main(module.initArgs, socket, helpers).then((c) => {
 					socket.emit(`${value}_init`, c);
 				}).catch((ex) => console.log(`There was an exception in module ${value}: ${ex}.`));
 			})

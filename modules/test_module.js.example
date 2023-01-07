@@ -11,8 +11,8 @@ function getRandomInt(min, max) {
 exports.onLoad = function(args) {
 
 }
-// Socket is only passed on init.
-exports.main = function(args, socket) {
+// Socket is only passed on init. Helpers will contain helper functions, no documentation yet. Read server.js.
+exports.main = function(args, socket, helpers) {
 	return new Promise(async (resolve, reject) => {
 		setTimeout(() => {
 			if (getRandomInt(0, 4) == 1) reject("Test rejection"); // 1/4 chance of creating exception to test handling.

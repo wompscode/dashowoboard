@@ -58,7 +58,7 @@ exports.onLoad = function(args, socket) {
 	});
 }
 
-exports.main = function(args) {
+exports.main = function(args, socket, helpers) {
 	return new Promise(async (resolve, reject) => {
 		
 		cpuTemp = await si.cpuTemperature();
